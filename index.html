@@ -48,14 +48,14 @@
     <button id="apiUrlSave" class="btn btn-primary btn-block"><i class="fa-solid fa-arrow-right-to-bracket"></i> Masuk sebagai Admin/Guru BK</button>
     <p class="setup-note">URL &amp; token ini hanya disimpan di browser kamu (localStorage), tidak dikirim ke mana-mana kecuali ke Web App Google Apps Script milikmu sendiri. Lihat README untuk cara membuatnya.</p>
     <button type="button" class="btn btn-ghost btn-block pwa-install-btn"><i class="fa-solid fa-download"></i> Pasang Aplikasi di Perangkat</button>
-    <a href="#" id="showGuruLoginLink" class="setup-switch-link">Login sebagai Guru Mapel →</a>
+    <a href="#" id="showGuruLoginLink" class="setup-switch-link">Login sebagai Guru →</a>
     <a href="#" id="showKonselorLoginLink" class="setup-switch-link">Login sebagai Guru BK (Konselor) →</a>
   </div>
 
-  <!-- Login Guru Mapel: cukup Username & Password, tanpa URL/token sama sekali -->
+  <!-- Login Guru: cukup Username & Password, tanpa URL/token sama sekali -->
   <div class="setup-card hidden" id="guruLoginCard">
     <h1>BK Digital</h1>
-    <p class="setup-sub">Login Guru Mapel</p>
+    <p class="setup-sub">Login Guru</p>
     <label class="setup-label">Username</label>
     <input id="guruUsernameInput" type="text" autocomplete="username" placeholder="Username dari Guru BK" />
     <label class="setup-label">Password</label>
@@ -79,7 +79,7 @@
     <button id="konselorLoginBtn" class="btn btn-primary btn-block"><i class="fa-solid fa-arrow-right-to-bracket"></i> Masuk</button>
     <p class="setup-note">Setelah masuk, kamu hanya bisa melihat &amp; mencatat Konseling untuk siswa di kelas yang menjadi tanggung jawabmu. Belum punya akun? Hubungi Admin/Guru BK di sekolahmu.</p>
     <button type="button" class="btn btn-ghost btn-block pwa-install-btn"><i class="fa-solid fa-download"></i> Pasang Aplikasi di Perangkat</button>
-    <a href="#" id="showGuruLoginFromKonselorLink" class="setup-switch-link">← Login sebagai Guru Mapel</a>
+    <a href="#" id="showGuruLoginFromKonselorLink" class="setup-switch-link">← Login sebagai Guru</a>
     <a href="#" id="showAdminLoginLink2" class="setup-switch-link">← Masuk sebagai Admin/Guru BK</a>
   </div>
 
@@ -104,7 +104,7 @@
       <a href="#kenaikan" class="nav-item" data-page="kenaikan"><i class="fa-solid fa-arrow-up-right-dots"></i><span>Kenaikan &amp; Kelulusan</span></a>
     </nav>
     <div class="sidebar-foot">
-      <button id="guruAccountsBtn" class="nav-item nav-item--ghost"><i class="fa-solid fa-users-gear"></i><span>Akun Guru Mapel</span></button>
+      <button id="guruAccountsBtn" class="nav-item nav-item--ghost"><i class="fa-solid fa-users-gear"></i><span>Akun Guru</span></button>
       <button id="konselorAccountsBtn" class="nav-item nav-item--ghost"><i class="fa-solid fa-user-shield"></i><span>Akun Guru BK (Konselor)</span></button>
       <button class="nav-item nav-item--ghost pwa-install-btn" type="button"><i class="fa-solid fa-download"></i><span>Pasang Aplikasi</span></button>
       <button id="settingsBtn" class="nav-item nav-item--ghost"><i class="fa-solid fa-gear"></i><span>Pengaturan</span></button>
@@ -194,6 +194,9 @@
             <button class="btn btn-ghost" id="btnDownloadTemplate" title="Unduh template Excel untuk diisi"><i class="fa-solid fa-file-arrow-down"></i> Template Excel</button>
             <button class="btn btn-ghost" id="btnImportSiswa" title="Upload data siswa dari file Excel"><i class="fa-solid fa-file-arrow-up"></i> Import Excel</button>
             <input type="file" id="importSiswaFile" accept=".xlsx,.xls" class="hidden" />
+            <button class="btn btn-ghost" id="btnImportFotoZip" title="Upload banyak foto siswa sekaligus dari file ZIP (nama file = NIS/NISN)"><i class="fa-solid fa-file-zipper"></i> Upload Foto (ZIP)</button>
+            <input type="file" id="importFotoZipFile" accept=".zip,application/zip" class="hidden" />
+            <button class="btn btn-ghost" id="btnBulkPrintBarcode" title="Cetak kartu QR banyak siswa sekaligus, ukuran kartu pelajar"><i class="fa-solid fa-id-card"></i> Cetak Kartu QR (Massal)</button>
             <button class="btn btn-danger hidden" id="btnBulkDeleteSiswa" title="Hapus semua siswa yang dicentang"><i class="fa-solid fa-trash"></i> Hapus Terpilih (<span id="bulkDeleteSiswaCount">0</span>)</button>
             <button class="btn btn-primary" id="btnAddSiswa"><i class="fa-solid fa-plus"></i> Tambah Siswa</button>
           </div>
@@ -221,12 +224,25 @@
               <option value="">Semua Status</option>
               <option value="Hadir">Hadir</option><option value="Sakit">Sakit</option>
               <option value="Izin">Izin</option><option value="Alpa">Alpa</option>
+               <option value="Belum">Belum diabsen</option>
             </select>
           </div>
           <div class="filter-group">
             <button class="btn btn-ghost" id="btnBulkAbsensi"><i class="fa-solid fa-square-check"></i> Absen Massal per Kelas</button>
+            <button class="btn btn-ghost" id="btnKioskAbsensi"><i class="fa-solid fa-camera"></i> Mode Kamera (QR)</button>
             <button class="btn btn-primary" id="btnAddAbsensi"><i class="fa-solid fa-plus"></i> Catat Absensi</button>
           </div>
+        </div>
+        <div class="card" id="absensiRosterCard">
+          <h3 id="rosterTitle" style="font-size:15px;font-weight:700;margin-bottom:8px">Daftar Kehadiran</h3>
+          <div id="rosterChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+          <div class="table-wrap" style="max-height:420px;overflow-y:auto">
+            <table class="table" id="tableRoster">
+              <thead><tr><th>No</th><th>Nama</th><th>Kelas</th><th>Status</th><th>Keterangan</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="rosterEmpty" style="display:none"><i class="fa-solid fa-user-check"></i><p>Tidak ada siswa untuk filter ini.</p></div>
         </div>
         <div class="card"><canvas id="chartAbsensiPage" height="90"></canvas></div>
         <div class="card table-card">
@@ -434,7 +450,7 @@
       <a href="#kolaborasi" class="nav-item" data-page="kolaborasi"><i class="fa-solid fa-people-arrows"></i><span>Kolaborasi</span></a>
       <a href="#laporan" class="nav-item" data-page="laporan"><i class="fa-solid fa-file-pdf"></i><span>Laporan</span></a>
       <a href="#kenaikan" class="nav-item" data-page="kenaikan"><i class="fa-solid fa-arrow-up-right-dots"></i><span>Kenaikan &amp; Kelulusan</span></a>
-      <button class="nav-item nav-item--ghost" id="guruAccountsBtnMobile"><i class="fa-solid fa-users-gear"></i><span>Akun Guru Mapel</span></button>
+      <button class="nav-item nav-item--ghost" id="guruAccountsBtnMobile"><i class="fa-solid fa-users-gear"></i><span>Akun Guru</span></button>
       <button class="nav-item nav-item--ghost" id="konselorAccountsBtnMobile"><i class="fa-solid fa-user-shield"></i><span>Akun Guru BK (Konselor)</span></button>
       <button class="nav-item nav-item--ghost pwa-install-btn" type="button"><i class="fa-solid fa-download"></i><span>Pasang Aplikasi</span></button>
       <button class="nav-item nav-item--ghost" id="settingsBtnMobile"><i class="fa-solid fa-gear"></i><span>Pengaturan</span></button>
@@ -442,6 +458,42 @@
     </div>
   </div>
   <div class="sheet-backdrop" id="sheetBackdrop"></div>
+</div>
+
+<!-- ============ KIOSK ABSENSI BARCODE (kamera standby) ============ -->
+<div class="kiosk-overlay" id="kioskOverlay">
+  <div class="kiosk-topbar">
+    <div class="kiosk-title"><i class="fa-solid fa-qrcode"></i> Absensi Kamera — Scan Kartu QR</div>
+    <div class="kiosk-topbar-right">
+      <label class="kiosk-status-label">Status jika terdeteksi:
+        <select id="kioskStatusSelect" class="select">
+          <option value="Hadir">Hadir</option>
+          <option value="Sakit">Sakit</option>
+          <option value="Izin">Izin</option>
+        </select>
+      </label>
+      <button class="icon-btn" id="kioskSwitchCamBtn" title="Ganti kamera depan/belakang"><i class="fa-solid fa-rotate"></i></button>
+      <button class="icon-btn" id="kioskCloseBtn" title="Tutup & matikan kamera"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+  <div class="kiosk-body">
+    <div class="kiosk-camera-wrap">
+      <div id="kioskReader"></div>
+      <div class="kiosk-scan-frame"></div>
+      <div class="kiosk-result" id="kioskResult">
+        <div class="kiosk-standby">
+          <i class="fa-solid fa-id-card"></i>
+          <p>Kamera siap. Arahkan kartu QR siswa ke kamera untuk absen otomatis.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="kiosk-manual-bar">
+    <i class="fa-solid fa-keyboard"></i>
+    <span>Kamera susah membaca kode QR? Ketik/tempel kodenya, atau tembakkan alat pemindai barcode/QR USB/Bluetooth ke kolom ini:</span>
+    <input type="text" id="kioskManualInput" placeholder="Ketik atau scan kode QR di sini, lalu Enter" autocomplete="off" />
+    <button type="button" class="btn btn-primary btn-sm" id="kioskManualBtn"><i class="fa-solid fa-check"></i> Proses</button>
+  </div>
 </div>
 
 <!-- ============ MODAL (generic form) ============ -->
@@ -476,6 +528,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="qrcode.min.js"></script>
+<script src="html5-qrcode.min.js"></script>
 <script src="pwa.js"></script>
 <script src="script.js"></script>
 </body>

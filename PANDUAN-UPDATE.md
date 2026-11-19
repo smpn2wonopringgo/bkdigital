@@ -1,5 +1,13 @@
 # Panduan Update BK Digital
 
+## Update terbaru — Akun "Guru" bisa Absensi
+
+- Sebutan "Guru Mapel" di seluruh aplikasi diganti **Guru** (sheet "Guru" & data lama tidak berubah).
+- Akun Guru sekarang punya menu **Absensi** selain Pelanggaran: catat satu-satu, **Absen Massal per Kelas**, dan Mode Kamera (QR) — dibatasi ke kelas tanggung jawab akun.
+- Halaman Absensi punya kartu **Daftar Kehadiran**: semua siswa kelas terpilih + status Hadir / Sakit / Izin / Alpa / Belum diabsen pada tanggal terpilih (kosong = hari ini).
+- **Wajib** tempel ulang `Code.gs` terbaru di Apps Script, lalu Deploy > Manage deployments > New version.
+
+
 Ringkasan perubahan dan cara memasangnya. Kode frontend (GitHub) dan data (Google Sheet)
 tetap terpisah seperti sebelumnya — **update kode ini tidak pernah menyentuh data yang
 sudah tersimpan di Sheet kamu.**
@@ -58,7 +66,7 @@ sebagai baris key-value biasa di sheet **Pengaturan** yang sudah ada.
 Karena `DEFAULT_API_URL` tertanam langsung di `script.js` (jadi terlihat publik kalau
 repo GitHub-nya publik), update ini menambahkan:
 
-1. **Proteksi brute-force di login Guru Mapel & Konselor** — setelah 5x gagal berturut-
+1. **Proteksi brute-force di login Guru & Konselor** — setelah 5x gagal berturut-
    turut, Username itu dikunci otomatis selama 15 menit (memakai `CacheService`, bukan
    Sheet, jadi otomatis kadaluarsa sendiri). Tiap percobaan gagal juga diberi jeda ±1.2
    detik supaya tebak-tebak otomatis jauh lebih lambat. **Wajib ganti `Code.gs`** untuk
@@ -122,13 +130,13 @@ Update kali ini menambahkan penyimpanan **Profil Sekolah** (Nama Sekolah, Tahun
 Pelajaran, Logo) ke Google Sheet lewat sheet baru bernama **"Pengaturan"**, supaya
 identitas sekolah otomatis muncul lagi di perangkat/browser manapun — bukan cuma
 tersimpan di localStorage satu browser seperti sebelumnya. Update ini juga
-menambahkan **akun Guru Mapel** (lihat bagian 8) lewat sheet baru **"Guru"**.
+menambahkan **akun Guru** (lihat bagian 8) lewat sheet baru **"Guru"**.
 
 Karena itu, **Code.gs di Apps Script kamu wajib ditimpa ulang** dengan isi `Code.gs`
 yang ada di paket ini (langkah-langkahnya sama seperti bagian 1 di bawah). Kalau tidak
 diganti, tombol "Simpan Profil Sekolah" akan gagal dengan pesan error "Aksi POST tidak
 dikenal" karena backend lama belum mengenal aksi `saveSettings`, dan menu "Kelola Akun
-Guru Mapel" / login Guru Mapel juga belum akan berfungsi.
+Guru" / login Guru juga belum akan berfungsi.
 
 Sheet "Pengaturan" dan "Guru" akan otomatis dibuat sendiri oleh backend saat pertama
 kali dipakai (klik "Simpan Profil Sekolah" / tambah akun guru pertama) — tidak perlu
@@ -252,9 +260,9 @@ kalau memang belum ada di daftar baku.
 supaya URL tidak berubah), baru kemudian ganti `index.html`, `script.js`,
 `style.css` di GitHub seperti biasa.
 
-## 8. Akun Guru Mapel — supaya tiap guru bisa input & pantau Pelanggaran sendiri
+## 8. Akun Guru — supaya tiap guru bisa input & pantau Pelanggaran sendiri
 
-Sekarang guru mapel bisa punya akun login sendiri, **tanpa perlu tahu URL Web App
+Sekarang guru bisa punya akun login sendiri, **tanpa perlu tahu URL Web App
 atau ACCESS_TOKEN sama sekali** — mereka cukup diberi Username & Password. Setelah
 login, tampilan mereka otomatis dikepras: cuma menu **Pelanggaran** yang muncul
 (untuk mencatat & memantau), dan hanya untuk kelas yang kamu tentukan sebagai
@@ -279,7 +287,7 @@ tetap berfungsi seperti sebelumnya (Admin isi URL manual di layar setup).
 ### b) Buat akun untuk tiap guru
 
 1. Login sebagai Admin/Guru BK seperti biasa → klik **Pengaturan** → **Kelola Akun
-   Guru Mapel**.
+   Guru**.
 2. Isi Nama, Username, Password, dan **Kelas Tanggung Jawab** (pisahkan dengan
    koma kalau lebih dari satu kelas, contoh: `VII-A, VII-B`).
 3. Klik Tambah Akun. Ulangi untuk tiap guru.
@@ -288,7 +296,7 @@ tetap berfungsi seperti sebelumnya (Admin isi URL manual di layar setup).
    jalur pribadi (WhatsApp/japri), bukan digabung dengan link publiknya.
 
 Guru tinggal buka link tersebut → kalau `DEFAULT_API_URL` sudah diisi, layar login
-Guru Mapel (Username & Password saja) akan langsung muncul duluan — tidak ada field
+Guru (Username & Password saja) akan langsung muncul duluan — tidak ada field
 URL/token yang perlu mereka isi.
 
 ### c) Beberapa catatan penting
@@ -325,3 +333,83 @@ baru kemudian ganti `index.html`, `script.js`, `style.css` di GitHub.
 
 Ini murni perubahan frontend (`index.html`, `script.js`, `style.css`) — tidak
 perlu update `Code.gs` untuk bagian ini.
+
+---
+
+## Update: Absensi Kamera — Scan Kartu QR
+
+Fitur dari versi `simulasibkbarcode` sudah digabung ke proyek ini.
+
+**Yang baru**
+- Kolom **Kode QR** di form Data Siswa (tombol *Buat Otomatis* → `BK-<NIS>`, preview QR, cetak 1 kartu).
+- Tombol **Cetak Kartu QR (Massal)** di halaman Data Siswa (ukuran kartu pelajar, 85,6×54 mm, tersusun di A4). Siswa yang belum punya kode dibuatkan otomatis & disimpan. Nama sekolah/tahun pelajaran diambil dari Profil Sekolah.
+- Tombol **Mode Kamera (QR)** di halaman Absensi: kamera standby, tunjukkan kartu → absen tersimpan otomatis (status Hadir/Sakit/Izin bisa dipilih), ada beep, deteksi absen ganda hari ini, ganti kamera depan/belakang, dan kolom ketik/pemindai USB-Bluetooth sebagai cadangan.
+- Kolom `Barcode` ikut di Template Excel import siswa.
+- File baru: `qrcode.min.js`, `html5-qrcode.min.js` (lokal, tidak butuh CDN). Service worker naik ke `bkdigital-v5`.
+
+**Wajib di backend (Code.gs)** — 1 baris. Di `DEFAULT_HEADERS`, tambahkan `'Barcode'` di akhir header Siswa:
+
+```js
+Siswa: ['ID','NIS','Nama','Kelas','JenisKelamin','TempatTglLahir','Alamat','NamaOrtu','NoHPOrtu','Catatan','Barcode'],
+```
+
+Lalu Deploy → Manage deployments → pensil → New version → Deploy. Kolom `Barcode` otomatis ditambahkan ke sheet Siswa yang sudah ada tanpa menyentuh data lama.
+
+**Hak akses**
+- Admin: semua fitur QR.
+- Konselor: bisa pakai Mode Kamera (hanya untuk siswa kelas tanggung jawabnya — ditolak server untuk kelas lain). Cetak massal disembunyikan karena butuh menulis ke data Siswa.
+- Guru: tidak punya akses (hanya menu Pelanggaran).
+
+**Catatan:** kamera di browser hanya jalan lewat HTTPS (GitHub Pages sudah HTTPS) atau localhost.
+
+---
+
+## Update: Halaman Guru Piket (`piket.html`)
+
+Halaman **terpisah** khusus Absensi QR, dibuka di `https://<situs-kamu>/piket.html` (mis. di tablet/HP di gerbang). Login memakai **1 akun Guru Piket bersama** — bukan akun Guru/Konselor.
+
+**Setup akun (sekali saja, di Apps Script)**
+1. Pasang `Code.gs` terbaru, lalu Deploy → New version.
+2. Project Settings → Script Properties → tambahkan:
+   - `PIKET_USERNAME` — contoh `piket`
+   - `PIKET_PASSWORD` — kata sandi yang dibagikan ke guru piket
+   - `PIKET_NAMA` — (opsional) nama tampilan, default "Guru Piket"
+3. Selesai. Untuk **mengganti password**, ubah `PIKET_PASSWORD` — semua sesi piket lama otomatis keluar.
+
+**Yang bisa & tidak bisa dilakukan akun piket**
+- Bisa: memindai kartu QR (kamera / ketik / pemindai USB-Bluetooth), memilih status Hadir/Sakit/Izin, melihat rekap & daftar terbaru absensi **hari ini**.
+- Tidak bisa: membaca daftar siswa, melihat/mengubah/menghapus data apa pun, masuk ke aplikasi utama. Server yang mencocokkan kode QR, menentukan tanggal & jam (zona waktu script, bukan jam perangkat), dan menolak absen ganda di hari yang sama.
+- Login piket kena proteksi brute-force (5x gagal → dikunci 15 menit + email peringatan ke Admin).
+
+**Catatan**
+- Siswa harus sudah punya kode QR (menu Data Siswa → *Cetak Kartu QR (Massal)*).
+- Kamera butuh HTTPS (GitHub Pages sudah) dan izin kamera di browser. Layar tablet dijaga tetap menyala selama halaman dibuka.
+- `piket.js` memuat `API_URL` sendiri — kalau suatu saat URL Web App diganti, ubah juga di `script.js` **dan** `piket.js`.
+- Perbaikan kecil: Mode Kamera di aplikasi utama kini memakai tanggal lokal (sebelumnya UTC, bisa salah hari sebelum jam 07.00 WIB).
+
+---
+
+## Update: Foto Siswa, Upload Foto & Kartu Pelajar QR dengan Foto
+
+Penggabungan `simulasibk` → `simulasibkbarcode` + fitur foto.
+
+**Penggabungan**
+- `simulasibkbarcode` sudah memuat semua fitur `simulasibk` kecuali satu: **dropdown Jenis Pelanggaran dengan kotak pencarian** (teks panjang turun baris, tidak terpotong). Sekarang sudah ikut digabung (JS + CSS).
+- `DEFAULT_API_URL` **tidak diubah** (tetap URL milik versi barcode, karena backend-nya yang punya kolom Barcode & akun piket). Kalau ingin memakai URL Web App lain, ganti di `script.js` **dan** `piket.js`.
+
+**Yang baru**
+- Kolom **Foto Siswa** di form Tambah/Edit Siswa: tombol *Pilih Foto*, *Ambil dari Kamera* (di HP membuka kamera depan), *Hapus Foto*. Foto otomatis dipotong rasio 3:4 (wajah diprioritaskan di bagian atas), dikecilkan 168×224 px dan dikompres (±8–16 KB) supaya aman di batas sel Google Sheet.
+- Foto tampil di tabel Data Siswa, daftar pilih siswa, Mode Kamera (QR) di aplikasi utama, dan halaman `piket.html`.
+- **Kartu pelajar QR** didesain ulang (85,6×54 mm): header sekolah, foto 3:4, nama/kelas/NIS, dan QR lebih besar (20 mm) supaya mudah dipindai. Siswa tanpa foto memakai inisial.
+- Tombol **Cetak Kartu** (ikon kartu) di tiap baris Data Siswa (Admin) untuk mencetak 1 kartu langsung; kode QR dibuat otomatis kalau belum ada. *Cetak Kartu QR (Massal)* dan tombol cetak di form ikut memakai desain baru + foto.
+- Service worker naik ke `bkdigital-v11`.
+
+**Wajib di backend (Code.gs)** — lihat `BACKEND-PATCH-Code.gs.txt`:
+1. Tambah `'Foto'` di akhir header Siswa pada `DEFAULT_HEADERS` (wajib).
+2. (Opsional) Edit kecil `piketScanCode()` agar foto ikut dikirim ke halaman piket.
+Lalu Deploy → Manage deployments → pensil → New version → Deploy.
+
+**Catatan**
+- Foto disimpan sebagai teks (base64) di kolom `Foto`, sehingga ikut terunduh setiap kali aplikasi memuat data. Untuk ±500 siswa kira-kira 5 MB; kalau nanti ribuan siswa, sebaiknya foto dipindah ke Google Drive.
+- Foto tidak ikut ke arsip **SiswaLulus** saat kelulusan.
+- Foto hanya bisa diubah oleh Admin (Konselor/Guru tidak punya akses edit Data Siswa).
